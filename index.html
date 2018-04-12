@@ -1,5 +1,6 @@
 <html>
 <canvas id="Board" height=500 width=500 style="border: 1px solid black"></canvas>
+<p id="Score"></p>
 <script>
     var canvas = document.getElementById("Board");
     var ctx = canvas.getContext("2d");
@@ -8,6 +9,7 @@
     var tempX, tempY
     var change = 0;
     var snake = [head]
+    var score = 0
     apple = getApple()
     console.log(apple)
     ctx.rect(snake[0][0], snake[0][1], 10, 10);
@@ -15,20 +17,26 @@
 
     function interval() {
 
-        eatApple()
+        eatApple()  
+        updateScore()
         snake = update(snake, speedX, speedY)
         if (change == 1) {
             apple = getApple()
             change = 0
         }
+        outOfBound()
         draw(snake, apple)
         document.onkeydown = keyInput;
+    }
+
+    function updateScore(){
+        document.getElementById("Score").innerHTML = score
     }
 
     function eatApple() {
         if (snake[0][0] == apple[0] && snake[0][1] == apple[1]) {
             change = 1
-            console.log("Eated")
+            score +=1
         }
     }
 
@@ -48,6 +56,21 @@
             newSnake.push(snake[snake.length - 1])
         }
         return newSnake;
+    }
+
+    function outOfBound(){
+        if(snake[0][0] == -10){
+            snake[0][0] = canvas.width;
+        }
+        if(snake[0][0] == canvas.width+10){
+            snake[0][0] = 0;
+        }
+        if(snake[0][1] == -10){
+            snake[0][1] = canvas.height;
+        }
+        if(snake[0][1] == canvas.height+10){
+            snake[0][1] = 0;
+        }
     }
 
     function keyInput(e) {
