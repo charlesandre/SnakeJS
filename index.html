@@ -1,52 +1,79 @@
 <html>
+<button onclick="start()" >Click to start</button>
 <canvas id="Board" height=500 width=500 style="border: 1px solid black"></canvas>
 <p id="Score"></p>
+<p id="isDead"></p>
 <script>
-    var canvas = document.getElementById("Board");
-    var ctx = canvas.getContext("2d");
-    var head = [canvas.width / 2, canvas.height / 2]
-    var speedX = 0; var speedY = 0;
-    var tempX, tempY
-    var change = 0;
-    var snake = [head]
-    var score = 0
-    apple = getApple()
-    console.log(apple)
-    ctx.rect(snake[0][0], snake[0][1], 10, 10);
-    setInterval(function () { interval() }, 100);
+        var canvas = document.getElementById("Board");
+        var ctx = canvas.getContext("2d");
+        var head = [canvas.width / 2, canvas.height / 2]
+        var speedX = 1;
+        var speedY = 0;
+        var change = 0;
+        var snake = [head]
+        var score = 0
+        var apple = getApple()
+        var dead = true
+
+    function restart(){
+
+        head = [canvas.width / 2, canvas.height / 2]
+        speedX = 0;
+        speedY = 0;
+        change = 0;
+        snake = [head]
+        score = 0
+        apple = getApple()
+        dead = true
+        draw(snake,apple,canvas,ctx)
+    }
+
+    function start(){ 
+        restart()
+        dead = false
+        setInterval(function(){ if(dead==false){interval()} }, 100); 
+    }
+
 
     function interval() {
-
-        eatApple()  
-        updateScore()
-        snake = update(snake, speedX, speedY)
-        if (change == 1) {
-            apple = getApple()
+        snake = update(snake, speedX, speedY, change)
+        dead = eatItself(snake)
+        if(change == 1) {
+            apple = getApple(canvas)
             change = 0
         }
-        outOfBound()
-        draw(snake, apple)
+        eatApple(snake, apple)  
+        updateScore(score)
+        outOfBound(canvas, snake)
+        draw(snake, apple, canvas, ctx)
         document.onkeydown = keyInput;
+        
     }
 
-    function updateScore(){
-        document.getElementById("Score").innerHTML = score
+
+    function updateScore(newScore){
+        //Append score to html p
+        document.getElementById("Score").innerHTML = newScore
+        if(dead == true) {
+            document.getElementById("isDead").innerHTML = "You are dead"
+        }
     }
 
-    function eatApple() {
+    function eatApple(snake, apple) {
+        //If head coordonnates are on the apple then toggle change and increase speed
         if (snake[0][0] == apple[0] && snake[0][1] == apple[1]) {
             change = 1
             score +=1
         }
     }
 
-    function getApple() {
-        var x = (Math.floor((Math.random() * canvas.width / 10))) * 10;
-        var y = (Math.floor((Math.random() * canvas.height / 10))) * 10;
+    function getApple(canvas) {
+        var x = (Math.floor((Math.random() * 500 / 10))) * 10;
+        var y = (Math.floor((Math.random() * 500 / 10))) * 10;
         return [x, y]
     }
 
-    function update(snake, speedX, speedY) {
+    function update(snake, speedX, speedY, change) {
         newSnake = []
         newSnake.push([snake[0][0] + speedX * 10, snake[0][1] + speedY * 10])
         for (var i = 0; i < snake.length - 1; i++) {
@@ -58,7 +85,8 @@
         return newSnake;
     }
 
-    function outOfBound(){
+    function outOfBound(canvas, snake){
+        //Go back on the otherside when out of the board
         if(snake[0][0] == -10){
             snake[0][0] = canvas.width;
         }
@@ -74,29 +102,55 @@
     }
 
     function keyInput(e) {
-        speedX = 0
-        speedY = 0
-        if (e.keyCode == '38') {
+        
+        if (e.keyCode == '38' && speedY != 1) {
+            //Up
+            speedX = 0
+            speedY = 0
             speedY = -1;
         }
-        else if (e.keyCode == '40') {
+        else if (e.keyCode == '40' && speedY != -1) {
+            //Down
+            speedX = 0
+            speedY = 0
             speedY = 1;
         }
-        else if (e.keyCode == '37') {
+        else if (e.keyCode == '37' && speedX != 1) {
+            //Left
+            speedX = 0
+            speedY = 0
             speedX = -1;
         }
-        else if (e.keyCode == '39') {
+        else if (e.keyCode == '39' && speedX != -1) {
+            //Right
+            speedX = 0
+            speedY = 0
             speedX = 1;
         }
     }
-    function draw(snake, apple) {
+    
+    function eatItself(snake) {
+        var head = snake[0]
+        for (var i = 1; i<snake.length; i++){
+            if (head[0] == snake[i][0] && head[1] == snake[i][1]){
+                return true;
+            }
+        }
+        return false
+    }
+
+    function draw(snake, apple, canvas, ctx) {
+        //Clear
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath()
+        //Add Snake
         for (var i = 0; i < snake.length; i++) {
             ctx.rect(snake[i][0], snake[i][1], 10, 10);
         }
-
+        //Add Apple
         ctx.rect(apple[0], apple[1], 10, 10);
+
+        //Draw
         ctx.stroke();
     }
 </script>
